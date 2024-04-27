@@ -3,3 +3,9 @@ SIT-main
 grad.py
 model.py
 models/*
+results
+data/*
+LPIPS_Images
+__pycache__
+trans.txt
+LOA.ipynb
