@@ -9,7 +9,7 @@ import torch_dct as dct
 import scipy.stats as st
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 import lpips
-
+from SIT import *
 
 class Attack(object):
     """
@@ -191,7 +191,7 @@ class LOA(MIFGSM):
         epsilon=16/255, alpha=epsilon/epoch=1.6/255, epoch=10, decay=1., num_scale=10, num_block=3
     """
     
-    def __init__(self, model, epsilon=16/255, alpha=1.6/255, epoch=10, decay=1., num_copies=1, num_optim=4, targeted=False, random_start=False, 
+    def __init__(self, model, epsilon=16/255, alpha=1.6/255, epoch=10, decay=1., num_copies=20, num_optim=4, targeted=False, random_start=False, 
                 norm='linfty', loss='crossentropy',device=torch.device("cuda" if torch.cuda.is_available() else "cpu"), attack='LOA', **kwargs):
         super().__init__(model, epsilon, alpha, epoch, decay, targeted, random_start, norm, loss, device, attack, **kwargs)
         self.num_copies = num_copies
@@ -210,11 +210,10 @@ class LOA(MIFGSM):
             delta = torch.zeros_like(data).to(self.device)
             delta.uniform_(-self.epsilon, self.epsilon)
             delta.requires_grad = True
-    #   elif method == "SIT":
-    #     data_copy = blocktransform(data)
-    #     copy_img = tensor_to_image(data_copy[0])
-    #     copy_img.show()
-    #     delta = data_copy - data
+      elif method == "SIT":
+        data_copy = blocktransform(data)
+        # copy_img = tensor_to_image(data_copy[0])
+        delta = data_copy - data
       
       return delta
     
@@ -232,7 +231,6 @@ class LOA(MIFGSM):
 
         delta = self.init_lpips_delta(transformed_image)
         noised_image = self.add_noise(transformed_image, delta)
-        print(noised_image.shape)
         # noised_image = noised_image.view(1,3,1000,1500)
 
         momentum = 0.

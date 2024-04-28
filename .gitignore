@@ -9,3 +9,5 @@ LPIPS_Images
 __pycache__
 trans.txt
 LOA.ipynb
+results_loa
+.gitignore

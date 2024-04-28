@@ -73,5 +73,9 @@ def save_img(output_path,img):
     Image.fromarray(img).save(output_path)
 
 def save_json(data_dict, file_path="experimental_data.json"):
+    with open(file_path, 'r') as file:
+        results_data = json.load(file)
+
+    results_data.append(data_dict)
     with open(file_path, "w") as json_file:
-        json.dump(data_dict, json_file)
+        json.dump(results_data, json_file, indent=1)
