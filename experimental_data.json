@@ -1,0 +1,52 @@
+[
+ {
+  "resnet18": 5.2,
+  "resnet101": 86.1,
+  "resnext50": 81.6,
+  "densenet121": 58.4,
+  "mobilenet": 52.800000000000004,
+  "vit": 87.4,
+  "swin": 76.1,
+  "inceptionv3": 64.2
+ },
+ {
+  "resnet18": 6.0,
+  "resnet101": 87.0,
+  "resnext50": 84.0,
+  "densenet121": 62.0,
+  "mobilenet": 53.0,
+  "vit": 90.0,
+  "swin": 77.0,
+  "inceptionv3": 67.0
+ },
+ {
+  "resnet18": 3.0,
+  "resnet101": 78.0,
+  "resnext50": 77.0,
+  "densenet121": 48.0,
+  "mobilenet": 41.0,
+  "vit": 87.0,
+  "swin": 74.0,
+  "inceptionv3": 61.0
+ },
+ {
+  "resnet18": 73.0,
+  "resnet101": 73.0,
+  "resnext50": 73.0,
+  "densenet121": 73.0,
+  "mobilenet": 73.0,
+  "vit": 73.0,
+  "swin": 73.0,
+  "inceptionv3": 73.0
+ },
+ {
+  "resnet18": 73.0,
+  "resnet101": 96.0,
+  "resnext50": 89.0,
+  "densenet121": 85.0,
+  "mobilenet": 70.0,
+  "vit": 93.0,
+  "swin": 87.0,
+  "inceptionv3": 83.0
+ }
+]
