@@ -42,7 +42,7 @@ def dct( x):
         """
         Discrete Fourier Transform
         """
-        dctx = dt.dct_2d(x) #torch.fft.fft2(x, dim=(-2, -1))
+        dctx = dt.dct_2d(x) # torch.fft.fft2(x, dim=(-2, -1))
         _, _, w, h = dctx.shape
         low_ratio = 0.4
         low_w = int(w * low_ratio)
@@ -71,6 +71,7 @@ def drop_out( x):
 
 op = [resize, vertical_shift, horizontal_shift, vertical_flip, horizontal_flip, rotate180, scale, add_noise,dct,drop_out]
 num_block = 3
+num_copies = 20
 
 def blocktransform( x, choice=-1):
         _, _, w, h = x.shape
@@ -86,3 +87,9 @@ def blocktransform( x, choice=-1):
                 x_copy[:, :, x_axis[i]:idx_x, y_axis[j]:idx_y] = op[chosen](x_copy[:, :, x_axis[i]:idx_x, y_axis[j]:idx_y])
 
         return x_copy
+
+def transform_and_cat(x):
+        """
+        Scale the input for BlockShuffle
+        """
+        return torch.cat([blocktransform(x) for _ in range(num_copies)])
