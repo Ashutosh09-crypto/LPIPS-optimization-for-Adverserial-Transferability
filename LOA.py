@@ -192,13 +192,14 @@ class LOA(MIFGSM):
     """
     
     def __init__(self, model, epsilon=16/255, alpha=1.6/255, epoch=10, decay=1., num_copies=20, num_optim=4, targeted=False, random_start=False, 
-                norm='linfty', loss='crossentropy',device=torch.device("cuda" if torch.cuda.is_available() else "cpu"), attack='LOA', **kwargs):
+                norm='linfty', loss='crossentropy',device=torch.device("cuda" if torch.cuda.is_available() else "cpu"), attack='LOA', choice = -1,**kwargs):
         super().__init__(model, epsilon, alpha, epoch, decay, targeted, random_start, norm, loss, device, attack, **kwargs)
         self.num_copies = num_copies
         self.num_optim = num_optim
         self.epsilon = epsilon
         self.lpips_loss = LearnedPerceptualImagePatchSimilarity(net_type='squeeze', normalize=True).to(self.device)
         self.alpha = alpha
+        self.choice = choice
 
     def add_noise(self, x, noise=None):
         if noise != None:
@@ -206,6 +207,7 @@ class LOA(MIFGSM):
         return torch.clip(x + torch.zeros_like(x).uniform_(-16/255,16/255), 0, 1)
     
     def init_lpips_delta(self, data, method=None):
+      delta = None
       if method == None:
             delta = torch.zeros_like(data).to(self.device)
             delta.uniform_(-self.epsilon, self.epsilon)
@@ -225,11 +227,16 @@ class LOA(MIFGSM):
       delta = torch.clamp(delta + self.alpha * grad.sign(), -self.epsilon, self.epsilon)
       return delta
 
-    def lpips_transform(self, x, choice=-1):
+    def lpips_transform(self, x, mask=None):
         # transformed_image = x.copy()
         transformed_image = x
+        
+        
+        if (self.choice == 1) :
+            delta = self.init_lpips_delta(transformed_image, method="SIT")
+        else:
+            delta = self.init_lpips_delta(transformed_image)
 
-        delta = self.init_lpips_delta(transformed_image)
         noised_image = self.add_noise(transformed_image, delta)
         # noised_image = noised_image.view(1,3,1000,1500)
 
@@ -241,9 +248,13 @@ class LOA(MIFGSM):
             delta = self.update_lpips_delta(delta, momentum)
             noised_image = self.add_noise(noised_image, delta)
 
+        if (self.choice == 2) : # Add the SIT after LPIPS optimization
+            sit_delta = self.init_lpips_delta(self, noised_image)
+            noised_image = self.add_noise(noised_image, sit_delta)
+
         return noised_image
 
-    def transform(self, x, **kwargs):
+    def transform(self, x,**kwargs):
         """
         Scale the input for lpips_transform
         """

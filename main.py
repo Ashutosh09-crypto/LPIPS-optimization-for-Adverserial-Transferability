@@ -30,7 +30,7 @@ def main():
         os.mkdir(args.output_dir)
     if not args.eval:
         model = wrap_model(model_list[args.model](weights='DEFAULT').eval().cuda())
-        attacker = LOA(model, args.eps, args.alpha, args.epoch, args.momentum,args.num_copies,args.num_optim)
+        attacker = LOA(model, args.eps, args.alpha, args.epoch, args.momentum,args.num_copies,args.num_optim, choice=2)
         for batch_idx, [filenames, images] in tqdm.tqdm(enumerate(load_images(os.path.join(args.input_dir,'val_loa'), args.batchsize))):
             # print(os.path.join(args.input_dir,'val_rs'))
             labels = get_labels(filenames, f2l)
