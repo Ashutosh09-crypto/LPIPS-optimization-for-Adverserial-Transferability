@@ -46,7 +46,7 @@ class Attack(object):
         self.decay = 1.0
 
     
-    def forward(self, data, label, **kwargs):
+    def forward(self, data, label, mask, **kwargs):
         """
         The general attack procedure
         Arguments:
@@ -55,13 +55,13 @@ class Attack(object):
         """
         data = data.clone().detach().to(self.device)
         label = label.clone().detach().to(self.device)
+        mask = mask.clone().detach().to(self.device)
         # Initialize adversarial perturbation
         delta = self.init_delta(data)
-
         momentum = 0
         for _ in range(self.epoch):
             # Obtain the output
-            logits = self.get_logits(self.transform(data+delta, momentum=momentum))
+            logits = self.get_logits(self.transform(data+delta, mask=mask, momentum=momentum))
             # Calculate the loss
             loss = self.get_loss(logits, label)
             # Calculate the gradients
@@ -134,7 +134,7 @@ class Attack(object):
         else:
             raise Exception("Unsupported loss {}".format(loss))
 
-    def transform(self, data, **kwargs):
+    def transform(self, data, mask, **kwargs):
         return data
 
     def __call__(self, *input, **kwargs):
@@ -223,8 +223,8 @@ class LOA(MIFGSM):
        res = self.lpips_loss(image1, image2)
        return res
     
-    def update_lpips_delta(self, delta, grad):
-      delta = torch.clamp(delta + self.alpha * grad.sign(), -self.epsilon, self.epsilon)
+    def update_lpips_delta(self, delta, grad, mask):
+      delta = torch.clamp(delta + torch.mul(mask,grad.sign())*self.alpha, -self.epsilon, self.epsilon)
       return delta
 
     def lpips_transform(self, x, mask=None):
@@ -245,20 +245,22 @@ class LOA(MIFGSM):
             loss = self.get_lpips_loss(transformed_image, noised_image)
             grad = torch.autograd.grad(loss, delta, retain_graph=True)[0].to(self.device)
             momentum = momentum * self.decay + grad / (grad.abs().mean(dim=(1,2,3), keepdim=True))
-            delta = self.update_lpips_delta(delta, momentum)
+            delta = self.update_lpips_delta(delta, momentum, mask)
             noised_image = self.add_noise(noised_image, delta)
 
         if (self.choice == 2) : # Add the SIT after LPIPS optimization
             sit_delta = self.init_lpips_delta(self, noised_image)
             noised_image = self.add_noise(noised_image, sit_delta)
 
+        
+
         return noised_image
 
-    def transform(self, x,**kwargs):
+    def transform(self, x, mask, **kwargs):
         """
         Scale the input for lpips_transform
         """
-        return torch.cat([self.lpips_transform(x) for _ in range(self.num_copies)])
+        return torch.cat([self.lpips_transform(x, mask) for _ in range(self.num_copies)])
 
     def get_loss(self, logits, label):
         """

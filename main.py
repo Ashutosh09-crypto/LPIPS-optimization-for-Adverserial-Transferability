@@ -31,17 +31,17 @@ def main():
     if not args.eval:
         model = wrap_model(model_list[args.model](weights='DEFAULT').eval().cuda())
         attacker = LOA(model, args.eps, args.alpha, args.epoch, args.momentum,args.num_copies,args.num_optim, choice=2)
-        for batch_idx, [filenames, images] in tqdm.tqdm(enumerate(load_images(os.path.join(args.input_dir,'val_loa'), args.batchsize))):
+        for batch_idx, [filenames, images, masks] in tqdm.tqdm(enumerate(load_images(os.path.join(args.input_dir,'val_loa'), args.batchsize))):
             # print(os.path.join(args.input_dir,'val_rs'))
             labels = get_labels(filenames, f2l)
-            perturbations = attacker(images, labels)
+            perturbations = attacker(images, labels, masks)
             save_images(args.output_dir, images + perturbations.cpu(), filenames)
         accuracy = dict()
         res = '|'
         for model_name, model_arc in model_list.items():
             model = wrap_model(model_list[args.model](weights='DEFAULT').eval().cuda())
             succ, total = 0, 0
-            for batch_idx, [filenames, images] in tqdm.tqdm(enumerate(load_images(args.output_dir, args.eval_batchsize))):
+            for batch_idx, [filenames, images, masks] in tqdm.tqdm(enumerate(load_images(args.output_dir, args.eval_batchsize))):
                 labels = get_labels(filenames, f2l)
                 pred = model(images.cuda())
                 # pred = model(images)
@@ -65,7 +65,7 @@ def main():
             model_dir = 'models/'+model_name
             torch.save(model.state_dict(), model_dir)
             succ, total = 0, 0
-            for batch_idx, [filenames, images] in tqdm.tqdm(enumerate(load_images(args.output_dir, args.batchsize))):
+            for batch_idx, [filenames, images, masks] in tqdm.tqdm(enumerate(load_images(args.output_dir, args.batchsize))):
                 labels = get_labels(filenames, f2l)
                 pred = model(images.cuda())
                 # pred = model(images)

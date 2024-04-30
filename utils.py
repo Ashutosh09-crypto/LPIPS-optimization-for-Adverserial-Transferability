@@ -13,6 +13,7 @@ img_max, img_min = 1., 0
 
 mean = np.array([0.485, 0.456, 0.406])
 std = np.array([0.229, 0.224, 0.225])
+masks_dir = "grad_cam_masks_matrix/"
 
 model_list = {'resnet18':models.resnet18, 
                 'resnet101': models.resnet101,
@@ -31,23 +32,31 @@ def wrap_model(model):
 def load_images(input_dir, batch_size):
     images = [] 
     filenames = []
+    masks = []
     idx = 0
     for filepath in os.listdir(input_dir):
         image = Image.open(os.path.join(input_dir,filepath))
         image = image.resize((img_height, img_width)).convert('RGB')
+        mask_path = os.path.join(masks_dir,filepath+'.npy')
+        mask = np.load(mask_path)
         # Images for inception classifier are normalized to be in [-1, 1] interval.
         images.append(np.array(image).astype(np.float32)/255)
         filenames.append(os.path.basename(filepath))
+        masks.append(mask)
         idx += 1
         if idx == batch_size:
             images = torch.from_numpy(np.array(images)).permute(0,3,1,2)
-            yield filenames, images
+            masks_array = np.array(masks)
+            masks_tensor = torch.FloatTensor(masks_array).unsqueeze(1)
+            
+            yield filenames, images, masks_tensor # passing mask tensor
             filenames = []
             images = []
             idx = 0
     if idx > 0:
         images = torch.from_numpy(np.array(images)).permute(0,3,1,2)
-        yield filenames, images
+        masks_tensor = torch.FloatTensor(masks).unsqueeze(1)
+        yield filenames, images, masks_tensor
 
 def get_labels(names, f2l):
     labels = []
