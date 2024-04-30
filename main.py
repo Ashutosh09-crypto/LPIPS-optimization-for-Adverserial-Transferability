@@ -18,7 +18,7 @@ def get_parser():
     parser.add_argument('--momentum', default=0., type=float, help='the decay factor for momentum based attack')
     parser.add_argument('--model', default='resnet18', type=str, help='the source surrogate model', 
                         choices=['resnet18', 'resnet101', 'resnext50','densenet121', 'mobilenet', 'vit', 'swin','inceptionv3'])
-    parser.add_argument('--input_dir', default='data/', type=str, help='the path for the benign images')
+    parser.add_argument('--input_dir', default='testing_subset/', type=str, help='the path for the benign images')
     parser.add_argument('--output_dir', default='./results_loa', type=str, help='the path to store the adversarial patches')
     parser.add_argument('--output_txt',default='trans.txt',type=str,help='the path to store the results')
     return parser.parse_args()

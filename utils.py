@@ -13,7 +13,7 @@ img_max, img_min = 1., 0
 
 mean = np.array([0.485, 0.456, 0.406])
 std = np.array([0.229, 0.224, 0.225])
-masks_dir = "grad_cam_masks_matrix/"
+masks_dir = "data/masks/"
 
 model_list = {'resnet18':models.resnet18, 
                 'resnet101': models.resnet101,
@@ -48,10 +48,10 @@ def load_images(input_dir, batch_size):
             images = torch.from_numpy(np.array(images)).permute(0,3,1,2)
             masks_array = np.array(masks)
             masks_tensor = torch.FloatTensor(masks_array).unsqueeze(1)
-            
             yield filenames, images, masks_tensor # passing mask tensor
             filenames = []
             images = []
+            masks = []
             idx = 0
     if idx > 0:
         images = torch.from_numpy(np.array(images)).permute(0,3,1,2)
